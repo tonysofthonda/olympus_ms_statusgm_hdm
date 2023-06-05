@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE properties SYSTEM "http://java.sun.com/dtd/properties.dtd">
+
+<properties>
+    <entry key="dbhost">honda-olympus.cx5dmnd7w9rj.us-west-1.rds.amazonaws.com</entry>
+    <entry key="dbport">5432</entry>
+    <entry key="dbuser">olympusdb</entry>
+    <entry key="dbpass">h0nd2ol1mpus2023</entry>
+    <entry key="dbname">postgres</entry>
+    <entry key="urlmax">http://honda-olympus-env.eba-ymyq2kt6.us-west-1.elasticbeanstalk.com/olympus/maxtransit/v1</entry>
+    <entry key="timewait">3</entry>       <!-- seconds -->
+    <entry key="timelapse">1440</entry>   <!-- minutes -->
+</properties>
