@@ -54,7 +54,6 @@ public class MaxTransitService
 	
 	
 	private void sendEvent(Event event, Exception exception) {
-		log.error("### {}", event.getMsg(), exception);
 		logEventService.logEvent(event);
 		notificationService.sendNotification(event);
 	}

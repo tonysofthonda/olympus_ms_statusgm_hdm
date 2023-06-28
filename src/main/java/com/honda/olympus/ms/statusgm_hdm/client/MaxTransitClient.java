@@ -30,7 +30,7 @@ public class MaxTransitClient
 	@Autowired 
 	public MaxTransitClient(RestTemplateFactory rtFactory, Properties props) {
 		this.rtFactory = rtFactory;
-		log.info("# urlmax: {}", urlmax = props.getUrlmax());
+		this.urlmax = props.getUrlmax();
 	}
 	
 	

@@ -1,9 +1,12 @@
 package com.honda.olympus.ms.statusgm_hdm.service;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
+import com.honda.olympus.ms.statusgm_hdm.handler.AfeEventHandler;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
@@ -24,129 +27,128 @@ import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 @Service
-public class StatusGmHdmService 
-{
-	
-	@Autowired 
-	private AfeService afeService;
-	@Autowired 
-	private MaxTransitService maxTransitService;
-	
-	@Autowired 
-	private LogEventService logEventService;
-	@Autowired 
-	private NotificationService notificationService;
-	@Autowired
-	private GenstaafeHdmService genstaafeHdmService;
-	
-	@Autowired 
-	private MaxTransitEventHandler eventHandler;
-	
-	
-	@Scheduled(fixedDelayString = "${timelapse}", timeUnit = TimeUnit.MINUTES)
-	public void launchProcess() 
-	{
-		log.info("\n\n<<<<<<<  Process StatusGmHdm Start  >>>>>>>\n");
-		
-		
-		log.info(">>> sending jsonMaxTransit");
-		JsonMaxTransit request = new JsonMaxTransit("request", new ArrayList<>());
-		List<JsonResponse> jsonRespList = maxTransitService.sendRequest(request);
-		
-		
-		log.info(">>> validating response");
-		if (jsonRespList == null) return;
-		if (jsonRespList.isEmpty()) {
-			logEvent( eventHandler.emptyResponseError() );
-			return;
-		}
-		
-		
-		log.info(">>> iterating response list");
-		List<String> details = new ArrayList<>();
-		
-		for (JsonResponse jsonResp: jsonRespList) 
-		{
-			log.info("\n\n::::::: {} :::::::\n", jsonResp.toString());
-			
-			log.info(">>> validating vehOrderNbr");
-			// jsonResp.getVehOrderNbr() == null || jsonResp.getVehOrderNbr() < 0
-			if (!StringUtils.hasText( jsonResp.getVehOrderNbr() )) {
-				logEvent( eventHandler.vehOrderNbrError(jsonResp) );
-				continue;
-			}
-			
-			log.info(">>> finding fixed order");
-			AfeFixedOrder fixedOrder = afeService.findFixedOrders(jsonResp);
-			if (fixedOrder == null) continue;
-			
-			
-			log.info(">>> finding status");
-			AfeStatus status = afeService.findStatus(fixedOrder, jsonResp);
-			if (status == null) continue;
-			
-			
-			log.info(">>> finding event code by id");
-			AfeEventCode eventCode = afeService.findEventCodeById(status);
-			if (eventCode == null) continue;
-			
-			
-			log.info(">>> validating currVehEvntCd and currEvntStatusDt");
-			boolean isNewer = jsonResp.getCurrVehEvntCd() > eventCode.getEventCodeNumber() && 
-					          jsonResp.getCurrEvntStatusDt().isAfter(status.getEventCodeDate());	
-			if (!isNewer) {
-				logEvent( eventHandler.statusDateError(jsonResp) );
-				continue;
-			}
-			
-			
-			log.info(">>> validating currVehEvntCd range");
-			boolean inRange = jsonResp.getCurrVehEvntCd() >= 1_000 && jsonResp.getCurrVehEvntCd() <= 5_000; 
-			if (!inRange) {
-				logEvent( eventHandler.statusCodeError(jsonResp) );
-				continue;
-			}
-			
-			
-			log.info(">>> finding event code by number");
-			eventCode = afeService.findEventCodeByNumber(jsonResp);
-			if (eventCode == null) 
-			{
-				log.info(">>> inserting new event code");
-				int result = afeService.insertEventCode(jsonResp);
-				if (result < 1) continue;
-			}
-			
-			
-			log.info(">>> updating status");
-			int result = afeService.updateStatus(eventCode, jsonResp, fixedOrder);
-			if (result < 1) continue;
-			
-			
-			log.info(">>> updating fixed order");
-			result = afeService.updateFixedOrder(fixedOrder, jsonResp);
-			if (result >= 1) 
-			{
-				log.info("<<< gathering fixed order id ");
-				details.add( String.valueOf(fixedOrder.getId()) );
-			}
-			
-		}//for end	
-		
-		
-		if (!details.isEmpty()) {
-			log.info("<<< sending message to ms.genstaafe_hdm");
-			genstaafeHdmService.sendMessage( new Message(Status._SUCCESS, Status.SUCCESS, details) );
-		}
-		
-		log.info("\n\n<<<<<<<  Process StatusGmHdm End >>>>>>>\n");
-	}
-	
-	
-	private void logEvent(Event event) {
-		log.error("### {}", event.getMsg());
-		logEventService.logEvent(event);
-		notificationService.sendNotification(event);
-	}
-	
+public class StatusGmHdmService {
+
+    @Autowired
+    private AfeService afeService;
+    @Autowired
+    private MaxTransitService maxTransitService;
+
+    @Autowired
+    private LogEventService logEventService;
+    @Autowired
+    private NotificationService notificationService;
+    @Autowired
+    private GenstaafeHdmService genstaafeHdmService;
+
+    @Autowired
+    private MaxTransitEventHandler eventHandler;
+
+    @Autowired
+    private AfeEventHandler afeEventHandler;
+
+
+    @Scheduled(fixedDelayString = "${timelapse}", timeUnit = TimeUnit.MINUTES)
+    public void launchProcess() {
+        log.info("Process StatusGmHdm Start");
+
+        JsonMaxTransit request = new JsonMaxTransit("STATUS", new ArrayList<>());
+        List<JsonResponse> jsonRespList = maxTransitService.sendRequest(request);
+
+        if (jsonRespList == null) {
+            return;
+        }
+
+        if (jsonRespList.isEmpty()) {
+            logEvent(eventHandler.emptyResponseError());
+            return;
+        }
+
+        List<Map<String, Integer>> details = new ArrayList<>();
+
+        for (JsonResponse jsonResp : jsonRespList) {
+            if (!StringUtils.hasText(jsonResp.getVehOrderNbr())) {
+                logEvent(eventHandler.vehOrderNbrError(jsonResp));
+                continue;
+            }
+
+            AfeFixedOrder fixedOrder = afeService.findFixedOrders(jsonResp);
+            if (fixedOrder == null) continue;
+
+
+            AfeStatus status = afeService.findStatus(fixedOrder.getId(), jsonResp);
+
+            if (status == null) {
+                Event event = new Event();
+                event.setStatus(Status._FAIL);
+                event.setSource("ms.statusgm_hdm");
+                if (jsonResp.getCurrVehEvNtCd() != null && jsonResp.getCurrVehEvNtCd() != 2_000) {
+                    event.setMsg(String.format("El status '%s' NO corresponde con la secuencia de creación", jsonResp.getCurrVehEvNtCd()));
+                    logEventService.logEvent(event);
+                    continue;
+                }
+
+                AfeEventCode eventCode = afeService.findEventCodeByNumber(jsonResp.getCurrVehEvNtCd());
+
+                if (eventCode == null) {
+                    event.setMsg(String.format("NO se encontro numero de codigo '%s' en la tabla EVENT_CODE con el query '%s'", jsonResp.getCurrVehEvNtCd(), "findEventCodeByNumber"));
+                    logEventService.logEvent(event);
+                    continue;
+                }
+
+                int eventStatus = afeService.insertEventStatus(fixedOrder, eventCode, jsonResp);
+                if (eventStatus < 1) {
+                    continue;
+                }
+
+                status = afeService.findStatus(fixedOrder.getId(), jsonResp);
+                afeService.insertStatusHistory(status, eventCode, jsonResp);
+                continue;
+            }
+
+            AfeEventCode eventCode = afeService.findEventCodeById(status.getEventCodeId());
+            if (eventCode == null) continue;
+
+            if (!(eventCode.getEventCodeNumber() > (jsonResp.getCurrVehEvNtCd() != null ? jsonResp.getCurrVehEvNtCd() : 0))) {
+                logEvent(eventHandler.maxtransitCodeNumber(jsonResp));
+                continue;
+            }
+
+            eventCode = afeService.findEventCodeByNumber(jsonResp.getCurrVehEvNtCd());
+            if (eventCode == null) {
+                continue;
+            }
+
+            int result = afeService.updateStatus(eventCode, jsonResp, status);
+            if (result < 1) {
+                logEvent(afeEventHandler.failUpdateEvent());
+                continue;
+            }
+
+            int eventCodeResult = afeService.insertStatusHistory(status, eventCode, jsonResp);
+
+            if (eventCodeResult >= 1) {
+                HashMap<String, Integer> fixedOrderMap = new HashMap<>();
+                fixedOrderMap.put("fixed_order_id", fixedOrder.getId());
+                details.add(fixedOrderMap);
+            }
+
+        }//for end
+
+
+        if (!details.isEmpty()) {
+            genstaafeHdmService.sendMessage(new Message(Status._SUCCESS, Status.SUCCESS, details));
+        }
+
+        log.info("Process StatusGmHdm End");
+
+
+    }
+
+
+    private void logEvent(Event event) {
+        logEventService.logEvent(event);
+        notificationService.sendNotification(event);
+    }
+
 }

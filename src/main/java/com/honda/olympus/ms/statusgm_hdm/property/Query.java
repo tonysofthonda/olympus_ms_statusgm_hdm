@@ -16,4 +16,7 @@ public class Query
 	private final String insertEventCodeKEY = "insertEventCode";
 	private final String updateStatusKEY = "updateStatus";
 	private final String updateFixedOrderKEY = "updateFixedOrder";
+	private final String insertHistoryKEY = "insertHistory";
+	private final String updateEventStatusKEY = "updateEventStatus";
+	private final String insertEventStatusKEY = "insertEventStatus";
 }
