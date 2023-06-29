@@ -16,13 +16,13 @@ import com.honda.olympus.ms.statusgm_hdm.property.Service;
 public class AfeEventHandler {
 
     private static final String MSG_DB_CONNECTION_ERROR = "No es posible conectarse a la base de datos %s, %s, %s, %s";
-    private static final String MSG_FIND_FIXED_ORDERS_ERROR = "NO se encontró el veh_order_nbr '%s' en la tabla AFE_FIXED_ORDER_EV con el query 1 (%s)";
-    private static final String MSG_FIND_STATUS_ERROR = "NO se encontró el número de orden '%s' en la tabla AFE_STATUS_EV con el query 2 (%s)";
-    private static final String MSG_FIND_EVENT_CODE_BY_ID_ERROR = "NO se encontró el codigo de estatus '%s' en la tabla EVENT_CODE con el query 3 (%s)";
-    private static final String MSG_INSERT_EVENT_CODE_ERROR = "Fallo en la ejecución del query de inserción en la tabla EVENT_CODE con el query 5 (%s)";
-    private static final String MSG_UPDATE_STATUS_ERROR = "Fallo en la ejecución del query de actualización en la tabla AFE_STATUS_EV con el query 6 (%s)";
+    private static final String MSG_FIND_FIXED_ORDERS_ERROR = "NO se encontró el veh_order_nbr '%s' en la tabla AFE_FIXED_ORDERS_EV con el query 1 (%s)";
+    private static final String MSG_FIND_STATUS_ERROR = "NO se encontró el número de orden '%s' en la tabla AFE_EVENT_STATUS con el query (%s)";
+    private static final String MSG_FIND_EVENT_CODE_BY_ID_ERROR = "NO se encontró el codigo de estatus '%s' en la tabla EVENT_CODE con el query (%s)";
+    private static final String MSG_INSERT_EVENT_CODE_ERROR = "Fallo en la ejecución del query de inserción en la tabla EVENT_CODE con el query (%s)";
+    private static final String MSG_UPDATE_STATUS_ERROR = "Fallo en la ejecución del query de actualización en la tabla AFE_EVENT_STATUS con el query (%s)";
     private static final String MSG_UPDATE_FIXED_ORDER_OK = "El proceso fue realizado con éxito para la orden '%s' y estatus '%s'";
-    private static final String MSG_UPDATE_FIXED_ORDER_ERROR = "Fallo en la ejecución del query de actualización en la tabla AFE_FIXED_ORDER_EV con el query 7 (%s)";
+    private static final String MSG_UPDATE_FIXED_ORDER_ERROR = "Fallo en la ejecución del query de actualización en la tabla AFE_FIXED_ORDERS_EV con el query (%s)";
     private static final String MSG_FAIL_UPDATE_EVENT = "Fallo de ejecución del query de actualización en la tabla '%s' con el query '%s'";
     private static final String MSG_FAIL_INSERT = "Fallo en la ejecución del query de inserción en la tabla '%s' con el query '%s'";
 
@@ -86,7 +86,7 @@ public class AfeEventHandler {
 
     public Event failUpdateEvent() {
         return new Event(service.getServiceName(), Status._FAIL,
-                String.format(MSG_FAIL_UPDATE_EVENT, "AGE_EVENT_STATUS", query.getUpdateEventStatusKEY()),
+                String.format(MSG_FAIL_UPDATE_EVENT, "AFE_EVENT_STATUS", query.getUpdateEventStatusKEY()),
                 EMPTY);
     }
 
