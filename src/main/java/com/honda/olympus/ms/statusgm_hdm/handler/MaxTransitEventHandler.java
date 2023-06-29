@@ -21,7 +21,8 @@ public class MaxTransitEventHandler
 	private static final String MSG_STATUS_DATE_ERROR = "La fecha del estatus '%s' y el codigo del estatus '%s' son menores a los actuales";
 	private static final String MSG_STATUS_CODE_ERROR = "El codigo del estatus '%s' es menor a 1000 o mayor a 5000";
 	private static final String MSG_NO_CONN_ERROR = "Sin conexión a la API MAX TRANSIT";
-	
+	private static final String MSG_MAXTRANSIT_CODE_NUMBER = "El code number '%s' es menor del estatus actual";
+
 	private static final String EMPTY = "";
 	
 	
@@ -53,13 +54,13 @@ public class MaxTransitEventHandler
 	
 	
 	public Event statusDateError(JsonResponse response) {
-		String message = String.format(MSG_STATUS_DATE_ERROR, response.getCurrEvntStatusDt(), response.getCurrVehEvntCd());
+		String message = String.format(MSG_STATUS_DATE_ERROR, response.getCurrEvntStatusDt(), response.getCurrVehEvNtCd());
 		return new Event(service.getServiceName(), Status._FAIL, message, EMPTY);
 	}
 	
 	
 	public Event statusCodeError(JsonResponse response) {
-		String message = String.format(MSG_STATUS_CODE_ERROR, response.getCurrVehEvntCd());
+		String message = String.format(MSG_STATUS_CODE_ERROR, response.getCurrVehEvNtCd());
 		return new Event(service.getServiceName(), Status._FAIL, message, EMPTY);
 	}
 	
@@ -67,5 +68,8 @@ public class MaxTransitEventHandler
 	public Event noConnectionError() {
 		return new Event(service.getServiceName(), Status._FAIL, MSG_NO_CONN_ERROR, EMPTY);
 	}
-	
+
+	public Event maxtransitCodeNumber(JsonResponse response) {
+		return new Event(service.getServiceName(), Status._FAIL, String.format(MSG_MAXTRANSIT_CODE_NUMBER, response.getCurrVehEvNtCd()), EMPTY);
+	}
 }

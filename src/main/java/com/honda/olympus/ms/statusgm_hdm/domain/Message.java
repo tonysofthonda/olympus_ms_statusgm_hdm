@@ -1,6 +1,7 @@
 package com.honda.olympus.ms.statusgm_hdm.domain;
 
 import java.util.List;
+import java.util.Map;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -14,5 +15,5 @@ public class Message
 {
 	private Integer status;
 	private String msg; 
-	private List<String> details;
+	private List<Map<String, Integer>> details;
 }

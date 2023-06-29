@@ -11,18 +11,17 @@ import com.honda.olympus.ms.statusgm_hdm.service.StatusGmHdmService;
 
 
 @RestController
-public class StatusGmHdmController 
-{
-	
-	@Autowired
-	private StatusGmHdmService statusGmHdmService;
-	
-	
-	@GetMapping(path="/launch-process", consumes = MediaType.APPLICATION_JSON_VALUE)
-	public ResponseEntity<String> launchProcess() 
-	{
-		statusGmHdmService.launchProcess();
-		return new ResponseEntity<>(HttpStatus.OK.getReasonPhrase(), HttpStatus.OK);
-	}
-	
+public class StatusGmHdmController {
+
+    @Autowired
+    private StatusGmHdmService statusGmHdmService;
+
+
+    @GetMapping(path = "/launch-process", consumes = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<String> launchProcess() {
+
+        statusGmHdmService.launchProcess();
+        return new ResponseEntity<>(HttpStatus.OK.getReasonPhrase(), HttpStatus.OK);
+    }
+
 }

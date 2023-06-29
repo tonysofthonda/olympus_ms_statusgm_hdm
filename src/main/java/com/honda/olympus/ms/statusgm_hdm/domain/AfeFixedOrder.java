@@ -11,7 +11,7 @@ import lombok.NoArgsConstructor;
 public class AfeFixedOrder 
 {
 	private Integer id;
-	private Integer requestId;
+	private String requestId;
 	private String orderNumber;
 	private String envioFlag;
 }

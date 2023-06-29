@@ -55,7 +55,7 @@ public class AfeRepositorySpec
 		AfeFixedOrder fixedOrder = new AfeFixedOrder();
 		fixedOrder.setId(3);
 		
-		AfeStatus afeStatus = afeRepo.findStatus(fixedOrder);
+		AfeStatus afeStatus = afeRepo.findStatus(fixedOrder.getId());
 		assertNotNull(afeStatus);
 	}
 	
@@ -67,7 +67,7 @@ public class AfeRepositorySpec
 		afeStatus.setEventCodeDate( Timestamp.valueOf("2023-05-17 22:37:25.064").toLocalDateTime() );
 		afeStatus.setEventCodeId(4);
 		
-		AfeEventCode eventCode = afeRepo.findEventCodeById(afeStatus);
+		AfeEventCode eventCode = afeRepo.findEventCodeById(afeStatus.getId());
 		assertNotNull(eventCode);
 	}
 	
@@ -76,9 +76,9 @@ public class AfeRepositorySpec
 	@Order(5)
 	void shouldFindEventCodeByNumber() {
 		JsonResponse jsonResponse = new JsonResponse();
-		jsonResponse.setCurrVehEvntCd(2499);
+		jsonResponse.setCurrVehEvNtCd(2499);
 		
-		AfeEventCode eventCode = afeRepo.findEventCodeByNumber(jsonResponse);
+		AfeEventCode eventCode = afeRepo.findEventCodeByNumber(jsonResponse.getCurrVehEvNtCd());
 		assertNotNull(eventCode);
 	}
 	
@@ -88,7 +88,7 @@ public class AfeRepositorySpec
 	@Disabled
 	void shouldInsertEventCode() {
 		JsonResponse jsonResponse = new JsonResponse();
-		jsonResponse.setCurrVehEvntCd(2500); 
+		jsonResponse.setCurrVehEvNtCd(2500);
 		jsonResponse.setCurrVehEvntDesc("detail description");
 		
 		int result = afeRepo.insertEventCode(jsonResponse);
@@ -109,7 +109,7 @@ public class AfeRepositorySpec
 		AfeFixedOrder fixedOrder = new AfeFixedOrder();
 		fixedOrder.setId(3);
 		
-		int result = afeRepo.updateStatus(eventCode, jsonResponse, fixedOrder);
+		int result = afeRepo.updateStatus(eventCode, jsonResponse, new AfeStatus());
 		assertTrue(result == 1);
 	}
 	

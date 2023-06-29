@@ -12,6 +12,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class AfeStatus 
 {
+	private Integer id;
 	private LocalDateTime eventCodeDate;
 	private Integer eventCodeId;
 	private Integer fixedOrderId;
