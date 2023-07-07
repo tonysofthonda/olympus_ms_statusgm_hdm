@@ -1,5 +1,6 @@
 package com.honda.olympus.ms.statusgm_hdm.handler;
 
+import com.honda.olympus.ms.statusgm_hdm.property.Query;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -22,10 +23,16 @@ public class MaxTransitEventHandler
 	private static final String MSG_STATUS_CODE_ERROR = "El codigo del estatus '%s' es menor a 1000 o mayor a 5000";
 	private static final String MSG_NO_CONN_ERROR = "Sin conexión a la API MAX TRANSIT";
 	private static final String MSG_MAXTRANSIT_CODE_NUMBER = "El code number '%s' es menor del estatus actual";
+	private static final String MSG_EVENT_CODE_NOT_FOUND = "NO se encontró número de código %s en la tabla EVENT_CODE con el query %s";
+	private static final String MSG_UPDATE_STATUS_SUCCESS = "La actualización en la tabla EVENT_STATUS se realizo de manera exitosa.";
+	private static final String MSG_INSERT_HISTORY_STATUS_SUCCESS = "La inserción a AFE_EVENT_STATUS_HISTORY se realizo de manera exitosa.";
+
 
 	private static final String EMPTY = "";
-	
-	
+
+
+	@Autowired
+	private Query query;
 	@Autowired private Properties props;
 	@Autowired private Service service;
 	
@@ -63,6 +70,11 @@ public class MaxTransitEventHandler
 		String message = String.format(MSG_STATUS_CODE_ERROR, response.getCurrVehEvNtCd());
 		return new Event(service.getServiceName(), Status._FAIL, message, EMPTY);
 	}
+
+	public Event eventCodeNotFoundError(JsonResponse response) {
+		String message = String.format(MSG_EVENT_CODE_NOT_FOUND, response.getCurrVehEvNtCd(), query.getFindEventCodeByNumberKEY());
+		return new Event(service.getServiceName(), Status._FAIL, message, EMPTY);
+	}
 	
 	
 	public Event noConnectionError() {
@@ -71,5 +83,13 @@ public class MaxTransitEventHandler
 
 	public Event maxtransitCodeNumber(JsonResponse response) {
 		return new Event(service.getServiceName(), Status._FAIL, String.format(MSG_MAXTRANSIT_CODE_NUMBER, response.getCurrVehEvNtCd()), EMPTY);
+	}
+
+	public Event updateStatusSuccess() {
+		return new Event(service.getServiceName(), Status._SUCCESS, MSG_UPDATE_STATUS_SUCCESS, EMPTY);
+	}
+
+	public Event insertStatusHistorySuccess() {
+		return new Event(service.getServiceName(), Status._FAIL, MSG_INSERT_HISTORY_STATUS_SUCCESS, EMPTY);
 	}
 }

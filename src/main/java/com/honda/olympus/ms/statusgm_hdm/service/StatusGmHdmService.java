@@ -109,13 +109,14 @@ public class StatusGmHdmService {
             AfeEventCode eventCode = afeService.findEventCodeById(status.getEventCodeId());
             if (eventCode == null) continue;
 
-            if (!(eventCode.getEventCodeNumber() > (jsonResp.getCurrVehEvNtCd() != null ? jsonResp.getCurrVehEvNtCd() : 0))) {
+            if (!(eventCode.getEventCodeNumber() < (jsonResp.getCurrVehEvNtCd() != null ? jsonResp.getCurrVehEvNtCd() : 0))) {
                 logEvent(eventHandler.maxtransitCodeNumber(jsonResp));
                 continue;
             }
 
             eventCode = afeService.findEventCodeByNumber(jsonResp.getCurrVehEvNtCd());
             if (eventCode == null) {
+                logEvent(eventHandler.eventCodeNotFoundError(jsonResp));
                 continue;
             }
 
@@ -124,6 +125,7 @@ public class StatusGmHdmService {
                 logEvent(afeEventHandler.failUpdateEvent());
                 continue;
             }
+            logEvent(eventHandler.updateStatusSuccess());
 
             int eventCodeResult = afeService.insertStatusHistory(status, eventCode, jsonResp);
 
@@ -132,6 +134,7 @@ public class StatusGmHdmService {
                 fixedOrderMap.put("fixed_order_id", fixedOrder.getId());
                 details.add(fixedOrderMap);
             }
+            logEvent(eventHandler.insertStatusHistorySuccess());
 
         }//for end
 
