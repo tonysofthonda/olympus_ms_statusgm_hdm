@@ -40,7 +40,8 @@ public class MaxTransitService
 		}
 		catch (ResourceAccessException exception) {
 			if (exception.getCause() instanceof SocketTimeoutException) {
-				sendEvent(eventHandler.timeoutError(), null);
+				logEventService.logEvent(eventHandler.timeoutError());
+				notificationService.sendNotification(eventHandler.timeoutNotification());
 				return null;
 			}
 			sendEvent(eventHandler.noConnectionError(), exception);

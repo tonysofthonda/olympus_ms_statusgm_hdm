@@ -16,6 +16,7 @@ import com.honda.olympus.ms.statusgm_hdm.property.Service;
 public class AfeEventHandler {
 
     private static final String MSG_DB_CONNECTION_ERROR = "No es posible conectarse a la base de datos %s, %s, %s, %s";
+    private static final String MSG_DB_CONNECTION_NOTIFICATION = "105 Error al guardar en MaxTransit. No es posible conectarse a la BD";
     private static final String MSG_FIND_FIXED_ORDERS_ERROR = "NO se encontró el veh_order_nbr '%s' en la tabla AFE_FIXED_ORDERS_EV con el query 1 (%s)";
     private static final String MSG_FIND_STATUS_ERROR = "NO se encontró el número de orden '%s' en la tabla AFE_EVENT_STATUS con el query (%s)";
     private static final String MSG_FIND_EVENT_CODE_BY_ID_ERROR = "NO se encontró el codigo de estatus '%s' en la tabla EVENT_CODE con el query (%s)";
@@ -24,6 +25,7 @@ public class AfeEventHandler {
     private static final String MSG_UPDATE_FIXED_ORDER_OK = "El proceso fue realizado con éxito para la orden '%s' y estatus '%s'";
     private static final String MSG_UPDATE_FIXED_ORDER_ERROR = "Fallo en la ejecución del query de actualización en la tabla AFE_FIXED_ORDERS_EV con el query (%s)";
     private static final String MSG_FAIL_UPDATE_EVENT = "Fallo de ejecución del query de actualización en la tabla '%s' con el query '%s'";
+    private static final String MSG_FAIL_UPDATE_NOTIFICATION = "105 Error al guardar en MaxTransit. Los datos recibidos de MAXTRANSIT no se han podido guardar correctamente en la BD de AFE, favor de validar";
     private static final String MSG_FAIL_INSERT = "Fallo en la ejecución del query de inserción en la tabla '%s' con el query '%s'";
 
     private static final String EMPTY = "";
@@ -40,6 +42,10 @@ public class AfeEventHandler {
     public Event dbConnectionError() {
         String message = String.format(MSG_DB_CONNECTION_ERROR, props.getDbname(), props.getDbhost(), props.getDbport(), props.getDbuser());
         return new Event(service.getServiceName(), Status._FAIL, message, EMPTY);
+    }
+
+    public Event dbConnectionNotification() {
+        return new Event(service.getServiceName(), Status._FAIL, MSG_DB_CONNECTION_NOTIFICATION, EMPTY);
     }
 
 
@@ -89,6 +95,9 @@ public class AfeEventHandler {
                 String.format(MSG_FAIL_UPDATE_EVENT, "AFE_EVENT_STATUS", query.getUpdateEventStatusKEY()),
                 EMPTY);
     }
+    public Event failUpdateNotification() {
+        return new Event(service.getServiceName(), Status._FAIL, MSG_FAIL_UPDATE_NOTIFICATION, EMPTY);
+    }
 
     public Event failInsertStatusHistory() {
         return new Event(service.getServiceName(), Status._FAIL,
@@ -96,10 +105,13 @@ public class AfeEventHandler {
                 EMPTY);
     }
 
+    public Event failInsertStatusHistoryNotification() {
+        return new Event(service.getServiceName(), Status._FAIL, MSG_FAIL_UPDATE_NOTIFICATION, EMPTY);
+    }
+
     public Event failInsertEventStatus() {
         return new Event(service.getServiceName(), Status._FAIL,
                 String.format(MSG_FAIL_INSERT, "AFE_EVENT_STATUS", query.getInsertEventStatusKEY()), EMPTY);
     }
-
 
 }

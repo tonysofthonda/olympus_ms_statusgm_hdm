@@ -101,7 +101,8 @@ public class AfeService {
         try {
             int result = afeRepository.insertStatusHistory(status, eventCode, jsonResponse);
             if (result < 1) {
-                logEvent(eventHandler.failInsertStatusHistory());
+                logEventService.logEvent(eventHandler.failInsertStatusHistory());
+                this.notificationService.sendNotification(eventHandler.failInsertStatusHistoryNotification());
             }
             return result;
         } catch (DataAccessException exception) {
@@ -114,7 +115,9 @@ public class AfeService {
         try {
             int result = afeRepository.insertEventStatus(fixedOrder, eventCode, jsonResponse);
             if (result < 1) {
-                logEvent(eventHandler.failInsertEventStatus());
+                logEventService.logEvent(eventHandler.failInsertEventStatus());
+                this.notificationService.sendNotification(eventHandler.failInsertStatusHistoryNotification());
+
             }
             return result;
         } catch (DataAccessException exception) {
@@ -175,7 +178,7 @@ public class AfeService {
     private void handleDataAccessException(DataAccessException exception) {
         Event event = eventHandler.dbConnectionError();
         logEventService.logEvent(event);
-        notificationService.sendNotification(event);
+        notificationService.sendNotification(eventHandler.dbConnectionNotification());
     }
 
 }

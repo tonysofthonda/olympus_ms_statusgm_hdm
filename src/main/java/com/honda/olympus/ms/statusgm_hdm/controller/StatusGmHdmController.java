@@ -23,5 +23,4 @@ public class StatusGmHdmController {
         statusGmHdmService.launchProcess();
         return new ResponseEntity<>(HttpStatus.OK.getReasonPhrase(), HttpStatus.OK);
     }
-
 }

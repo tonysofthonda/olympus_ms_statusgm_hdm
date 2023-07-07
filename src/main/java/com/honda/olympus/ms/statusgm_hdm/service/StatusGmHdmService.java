@@ -60,7 +60,8 @@ public class StatusGmHdmService {
         }
 
         if (jsonRespList.isEmpty()) {
-            logEvent(eventHandler.emptyResponseError());
+            logEventService.logEvent(eventHandler.emptyResponseError());
+            notificationService.sendNotification(eventHandler.emptyResponseNotification());
             return;
         }
 
@@ -68,12 +69,15 @@ public class StatusGmHdmService {
 
         for (JsonResponse jsonResp : jsonRespList) {
             if (!StringUtils.hasText(jsonResp.getVehOrderNbr())) {
-                logEvent(eventHandler.vehOrderNbrError(jsonResp));
+                logEventService.logEvent(eventHandler.vehOrderNbrError(jsonResp));
+                notificationService.sendNotification(eventHandler.vehOrderNbrNotification());
                 continue;
             }
 
             AfeFixedOrder fixedOrder = afeService.findFixedOrders(jsonResp);
-            if (fixedOrder == null) continue;
+            if (fixedOrder == null) {
+                this.logEvent(eventHandler.maxtransitError());
+            }
 
 
             AfeStatus status = afeService.findStatus(fixedOrder.getId(), jsonResp);
@@ -85,14 +89,16 @@ public class StatusGmHdmService {
                 if (jsonResp.getCurrVehEvNtCd() != null && jsonResp.getCurrVehEvNtCd() != 2_000) {
                     event.setMsg(String.format("El status '%s' NO corresponde con la secuencia de creación", jsonResp.getCurrVehEvNtCd()));
                     logEventService.logEvent(event);
+                    this.notificationService.sendNotification(eventHandler.noStatusFindNotification());
                     continue;
                 }
 
                 AfeEventCode eventCode = afeService.findEventCodeByNumber(jsonResp.getCurrVehEvNtCd());
 
                 if (eventCode == null) {
-                    event.setMsg(String.format("NO se encontro numero de codigo '%s' en la tabla EVENT_CODE con el query '%s'", jsonResp.getCurrVehEvNtCd(), "findEventCodeByNumber"));
+                    event.setMsg(String.format("NO se encontró numero de código '%s' en la tabla EVENT_CODE con el query '%s'", jsonResp.getCurrVehEvNtCd(), "findEventCodeByNumber"));
                     logEventService.logEvent(event);
+                    this.notificationService.sendNotification(eventHandler.maxtransitError());
                     continue;
                 }
 
@@ -107,22 +113,28 @@ public class StatusGmHdmService {
             }
 
             AfeEventCode eventCode = afeService.findEventCodeById(status.getEventCodeId());
-            if (eventCode == null) continue;
+            if (eventCode == null) {
+                this.logEvent(eventHandler.eventCodeError(status));
+                this.notificationService.sendNotification(eventHandler.maxtransitError());
+            };
 
             if (!(eventCode.getEventCodeNumber() < (jsonResp.getCurrVehEvNtCd() != null ? jsonResp.getCurrVehEvNtCd() : 0))) {
                 logEvent(eventHandler.maxtransitCodeNumber(jsonResp));
+                this.notificationService.sendNotification(eventHandler.maxtransitError());
                 continue;
             }
 
             eventCode = afeService.findEventCodeByNumber(jsonResp.getCurrVehEvNtCd());
             if (eventCode == null) {
-                logEvent(eventHandler.eventCodeNotFoundError(jsonResp));
+                this.logEventService.logEvent(this.eventHandler.eventCodeNotFoundError(jsonResp));
+                this.notificationService.sendNotification(this.eventHandler.maxtransitError());
                 continue;
             }
 
             int result = afeService.updateStatus(eventCode, jsonResp, status);
             if (result < 1) {
-                logEvent(afeEventHandler.failUpdateEvent());
+                this.logEventService.logEvent(afeEventHandler.failUpdateEvent());
+                this.notificationService.sendNotification(afeEventHandler.failUpdateNotification());
                 continue;
             }
             logEvent(eventHandler.updateStatusSuccess());
